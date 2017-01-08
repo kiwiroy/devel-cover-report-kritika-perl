@@ -1,12 +1,12 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "Cover reporting to Kritika",
    "author" : [
-      "vti <viacheslav.t@gmail.com>"
+      "Viacheslav Tykhanovskyi, C<vti@cpan.org>."
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.0.4, CPAN::Meta::Converter version 2.150010",
    "license" : [
-      "perl_5"
+      "artistic_2"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -42,6 +42,11 @@
       },
       "runtime" : {
          "requires" : {
+            "Devel::Cover" : "0",
+            "HTTP::Tiny" : "0",
+            "JSON" : "0",
+            "Sereal::Decoder" : "0",
+            "Sereal::Encoder" : "0",
             "perl" : "5.008001"
          }
       },
@@ -52,7 +57,21 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/kritikaio/devel-cover-report-kritika-perl/issues"
+      },
+      "homepage" : "https://github.com/kritikaio/devel-cover-report-kritika-perl",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/kritikaio/devel-cover-report-kritika-perl.git",
+         "web" : "https://github.com/kritikaio/devel-cover-report-kritika-perl"
+      }
+   },
    "version" : "0.01",
    "x_authority" : "cpan:VTI",
+   "x_contributors" : [
+      "vti <viacheslav.t@gmail.com>"
+   ],
    "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }
