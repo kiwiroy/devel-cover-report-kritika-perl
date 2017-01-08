@@ -144,3 +144,55 @@ sub _build_ua {
 
 1;
 __END__
+
+=head1 NAME
+
+Devel::Cover::Report::Kritika - Cover reporting to Kritika
+
+=head1 SYNOPSIS
+
+    export KRITIKA_TOKEN=yourtoken
+    cover -test -report kritika
+
+=head1 DESCRIPTION
+
+L<Devel::Cover::Report::Kritika> reports coverage to L<Kritika|https://kritika.io>.
+
+In order to submit the report, you have to set KRITIKA_TOKEN environmental variable to the appropriate token, which can
+be obtained from Kritika web interface.
+
+=head1 INTEGRATION
+
+L<Devel::Cover::Report::Kritika> was written having in mind the integration possibility with many public/private CI/CD
+services.
+
+It will detect the following services:
+
+=over 4
+
+=item * L<Travis CI|https://travis-ci.org/>
+
+=item * L<GitLab|https://about.gitlab.com/gitlab-ci/>
+
+=back
+
+=head1 DEVELOPMENT
+
+=head2 Repository
+
+    http://github.com/kritikaio/devel-cover-report-kritika-perl
+
+=head1 CREDITS
+
+=head1 AUTHOR
+
+Viacheslav Tykhanovskyi, C<vti@cpan.org>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2017, Viacheslav Tykhanovskyi
+
+This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.
+
+=cut
