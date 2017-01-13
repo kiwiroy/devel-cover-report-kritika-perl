@@ -2,6 +2,11 @@ Revision history for Perl extension Devel-Cover-Report-Kritika
 
 {{$NEXT}}
 
+0.02 2017-01-13T09:14:48Z
+
+    - make sure tests are passing on travis ci
+    - fix test dependency
+
 0.01 2017-01-12T18:30:50Z
 
     - original version

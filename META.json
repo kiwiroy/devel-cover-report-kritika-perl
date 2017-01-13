@@ -52,6 +52,7 @@
       },
       "test" : {
          "requires" : {
+            "Test::MonkeyMock" : "0",
             "Test::More" : "0.98"
          }
       }
@@ -68,7 +69,7 @@
          "web" : "https://github.com/kritikaio/devel-cover-report-kritika-perl"
       }
    },
-   "version" : "0.01",
+   "version" : "0.02",
    "x_authority" : "cpan:VTI",
    "x_contributors" : [
       "vti <viacheslav.t@gmail.com>"
