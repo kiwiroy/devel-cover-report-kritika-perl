@@ -18,6 +18,7 @@ subtest 'report: submits correct report' => sub {
     local *{"$report\::_build_ua"} = sub { $ua };
 
     local $ENV{KRITIKA_TOKEN}         = 'deadbeef';
+    local $ENV{TRAVIS_COMMIT}         = 'abcdef';
     local $ENV{CI_BUILD_REF}          = 'abcdef';
     local $ENV{DEVEL_COVER_DB_FORMAT} = 'Sereal';
 
