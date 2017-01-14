@@ -89,10 +89,10 @@ sub _parse_db {
                       if $realcriterion eq 'subroutine';
 
                     $summary->{$realcriterion}->{total} += @calls;
-                    $summary->{$realcriterion}->{covered} //= 0;
+                    $summary->{$realcriterion}->{covered} ||= 0;
 
                     $lines->{$location}->{$realcriterion}->{total} += @calls;
-                    $lines->{$location}->{$realcriterion}->{covered} //= 0;
+                    $lines->{$location}->{$realcriterion}->{covered} ||= 0;
 
                     if (my @covered = grep { $_->covered } @calls) {
                         $lines->{$location}->{$realcriterion}->{covered} +=
