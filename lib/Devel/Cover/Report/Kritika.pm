@@ -27,22 +27,43 @@ sub report {
 
 sub _post {
     my $class = shift;
-    my ($token, $coverage) = @_;
+    my ( $token, $coverage ) = @_;
 
     $coverage = JSON::encode_json($coverage);
 
-    my $ua       = $class->_build_ua;
-    my $response = $ua->post_form(
-        $API_ENDPOINT,
-        {
-            revision => $class->_detect_revision,
-            coverage => $coverage
-        },
-        {headers => {Authorization => 'Token ' . $token}}
-    );
+    my $ua = $class->_build_ua;
 
-    die $response->{reason} unless $response->{success};
+    my $response;
+    for my $i ( 1 .. 3 ) {
+        $response = $ua->post_form(
+            $API_ENDPOINT,
+            {
+                revision => $class->_detect_revision,
+                coverage => $coverage
+            },
+            { headers => { Authorization => 'Token ' . $token } }
+        );
+
+        last if $response->{success};
+
+        last unless $response->{status} eq '599';
+
+        warn "Retrying in ${i}s because of $response->{reason}: $response->{content}...\n";
+        $class->_sleep($i);
+    }
+
+    if (!$response->{success}) {
+        my $error = $response->{reason};
+
+        if ($response->{status} eq '599') {
+            $error .= ': ' . $response->{content};
+        }
+
+        die "Error: $error\n" unless $response->{success};
+    }
 }
+
+sub _sleep { shift; sleep(@_) }
 
 sub _detect_revision {
     my $class = shift;
