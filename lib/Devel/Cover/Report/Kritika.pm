@@ -2,7 +2,7 @@ package Devel::Cover::Report::Kritika;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use List::Util qw(sum);
 use HTTP::Tiny;
