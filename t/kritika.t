@@ -63,6 +63,7 @@ subtest 'report: detects config from .kritikarc' => sub {
     no strict 'refs';
     local *{"$report\::_build_ua"} = sub { $ua };
 
+    local $ENV{KRITIKA_TOKEN};
     local $ENV{CI_BUILD_REF}          = 'abcdef';
     local $ENV{DEVEL_COVER_DB_FORMAT} = 'Sereal';
 
