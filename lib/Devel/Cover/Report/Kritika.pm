@@ -9,25 +9,53 @@ use HTTP::Tiny;
 use JSON ();
 use Devel::Cover::DB;
 
-our $API_ENDPOINT =
-  ($ENV{KRITIKA_HOST} || 'https://kritika.io') . '/upload/coverage';
-
 sub report {
-    my ($class, $db, $options) = @_;
+    my $class = shift;
+    my ( $db, $options ) = @_;
 
-    my $token = $ENV{KRITIKA_TOKEN};
-    die 'KRITIKA_TOKEN is not defined' unless $token;
+    my $config = $class->_detect_config;
 
     my $coverage = $class->_parse_db($db);
 
-    $class->_post($token, $coverage);
+    $class->_post( $config, $coverage );
 
-    print "Coverage submitted to `$API_ENDPOINT`\n";
+    print "Coverage submitted to `$config->{base_url}`\n";
+}
+
+sub _detect_config {
+    my $class = shift;
+
+    my $ini = {};
+
+    if ( -f '.kritikarc' ) {
+        my @content = do { open my $fh, '<', '.kritikarc'; <$fh> };
+        foreach my $line (@content) {
+            next unless length $line;
+            next if $line =~ m/^#/;
+
+            chomp( my ( $key, $value ) = split /\s*=\s*/, $line, 2 );
+
+            $ini->{$key} = $value;
+        }
+    }
+
+    my $token = $ENV{KRITIKA_TOKEN} || $ini->{token}
+      or die "KRITIKA_TOKEN is not defined\n";
+    my $base_url =
+         $ENV{KRITIKA_BASE_URL}
+      || $ENV{KRITIKA_HOST}
+      || $ini->{base_url}
+      || 'https://kritika.io';
+
+    return {
+        token    => $token,
+        base_url => $base_url
+    };
 }
 
 sub _post {
     my $class = shift;
-    my ( $token, $coverage ) = @_;
+    my ( $config, $coverage ) = @_;
 
     $coverage = JSON::encode_json($coverage);
 
@@ -36,26 +64,27 @@ sub _post {
     my $response;
     for my $i ( 1 .. 3 ) {
         $response = $ua->post_form(
-            $API_ENDPOINT,
+            "$config->{base_url}/upload/coverage",
             {
                 revision => $class->_detect_revision,
                 coverage => $coverage
             },
-            { headers => { Authorization => 'Token ' . $token } }
+            { headers => { Authorization => 'Token ' . $config->{token} } }
         );
 
         last if $response->{success};
 
         last unless $response->{status} eq '599';
 
-        warn "Retrying in ${i}s because of $response->{reason}: $response->{content}...\n";
+        warn "Retrying in ${i}s because of $response->{reason}: "
+          . "$response->{content}...\n";
         $class->_sleep($i);
     }
 
-    if (!$response->{success}) {
+    if ( !$response->{success} ) {
         my $error = $response->{reason};
 
-        if ($response->{status} eq '599') {
+        if ( $response->{status} eq '599' ) {
             $error .= ': ' . $response->{content};
         }
 
@@ -90,21 +119,21 @@ sub _parse_db {
     my $cover = $db->cover;
 
     my @files = $cover->items;
-    foreach my $file (sort @files) {
+    foreach my $file ( sort @files ) {
         my $lines   = {};
         my $summary = {};
 
         my $f = $cover->file($file);
 
-        for my $criterion ($f->items) {
+        for my $criterion ( $f->items ) {
             next if $criterion eq 'time' || $criterion eq 'pod';
 
             my $c = $f->criterion($criterion);
 
-            for my $location ($c->items) {
-                my @calls = @{$c->location($location)};
+            for my $location ( $c->items ) {
+                my @calls = @{ $c->location($location) };
 
-                if ($criterion eq 'subroutine' || $criterion eq 'statement') {
+                if ( $criterion eq 'subroutine' || $criterion eq 'statement' ) {
                     my $realcriterion = $criterion;
                     $realcriterion = 'function'
                       if $realcriterion eq 'subroutine';
@@ -115,13 +144,13 @@ sub _parse_db {
                     $lines->{$location}->{$realcriterion}->{total} += @calls;
                     $lines->{$location}->{$realcriterion}->{covered} ||= 0;
 
-                    if (my @covered = grep { $_->covered } @calls) {
+                    if ( my @covered = grep { $_->covered } @calls ) {
                         $lines->{$location}->{$realcriterion}->{covered} +=
                           @calls;
                         $summary->{$realcriterion}->{covered} += @calls;
                     }
                 }
-                elsif ($criterion eq 'branch' || $criterion eq 'condition') {
+                elsif ( $criterion eq 'branch' || $criterion eq 'condition' ) {
                     my $total = sum map { $_->total } @calls;
                     my $covered =
                       sum map { $_ ? 1 : 0 } map { $_->values } @calls;
@@ -130,8 +159,8 @@ sub _parse_db {
                     $lines->{$location}->{$criterion}->{covered} += $covered;
 
                     foreach my $call (@calls) {
-                        push @{$lines->{$location}->{$criterion}->{hits}},
-                          [map { $_ ? 1 : 0 } $call->values];
+                        push @{ $lines->{$location}->{$criterion}->{hits} },
+                          [ map { $_ ? 1 : 0 } $call->values ];
                     }
 
                     $summary->{$criterion}->{total}   += $total;
@@ -148,7 +177,7 @@ sub _parse_db {
             file    => $realfile,
             summary => $summary,
             lines   => [
-                map { {line => $_, coverage => $lines->{$_}} }
+                map { { line => $_, coverage => $lines->{$_} } }
                 sort { $a <=> $b } keys %$lines
             ]
           };
@@ -160,7 +189,7 @@ sub _parse_db {
 sub _build_ua {
     my $class = shift;
 
-    return HTTP::Tiny->new(agent => "$class/$VERSION ");
+    return HTTP::Tiny->new( agent => "$class/$VERSION " );
 }
 
 1;
@@ -179,8 +208,11 @@ Devel::Cover::Report::Kritika - Cover reporting to Kritika
 
 L<Devel::Cover::Report::Kritika> reports coverage to L<Kritika|https://kritika.io>.
 
-In order to submit the report, you have to set KRITIKA_TOKEN environmental variable to the appropriate token, which can
-be obtained from Kritika web interface.
+In order to submit the report, you have to set C<KRITIKA_TOKEN> environmental variable or `token` option in C<.kritikarc>
+to the appropriate token, which can be obtained from Kritika web interface.
+
+When using on premise version of Kritika the webservice address can be specified by setting C<KRITIKA_BASE_URL>
+environmental variable or `base_url` option in C<.kritikarc>.
 
 =head1 INTEGRATION
 
