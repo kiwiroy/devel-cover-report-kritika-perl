@@ -101,6 +101,7 @@ sub _detect_revision {
         qw/
         TRAVIS_COMMIT
         CI_BUILD_REF
+        GITHUB_SHA
         /
       )
     {
@@ -226,6 +227,8 @@ It will detect the following services:
 =item * L<Travis CI|https://travis-ci.org/>
 
 =item * L<GitLab|https://about.gitlab.com/gitlab-ci/>
+
+=item * L<GitHub Actions|https://docs.github.com/en/actions>
 
 =back
 
